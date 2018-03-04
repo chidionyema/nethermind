@@ -16,20 +16,47 @@
  * along with the Nethermind. If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Unity;
+using System;
+using LightInject;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Nethermind.Core;
 
 namespace Nethermind.Runner
 {
     class Program
     {
+        private static ILogger _logger;
+
         static void Main(string[] args)
         {
-            var bootstraper = new Bootstraper();
-            var jsonRpcRunner = bootstraper.Container.Resolve<IJsonRpcRunner>();
-            jsonRpcRunner.Container = bootstraper.Container;
-            jsonRpcRunner.Start();
+            try
+            {
+                //var bootstraper = new Bootstraper();
+                var webHost = BuildWebHost(args);
 
-            var ethereumRunner = bootstraper.Container.Resolve<IEthereumRunner>();
+                _logger = webHost.Services.GetService<ILogger>();
+
+                var ethereumRunner = webHost.Services.GetService<IEthereumRunner>();
+                ethereumRunner.Start();
+
+                var jsonRpcRunner = webHost.Services.GetService<IJsonRpcRunner>();
+                jsonRpcRunner.Start(webHost);
+            }
+            catch (Exception e)
+            {
+                if (_logger == null)
+                {
+                    _logger = new ConsoleLogger();
+                }
+                _logger.Error("Error during Runner start", e);
+            }      
         }
+
+        public static IWebHost BuildWebHost(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>()
+                .Build();
     }
 }

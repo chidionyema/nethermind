@@ -16,35 +16,38 @@
  * along with the Nethermind. If not, see <http://www.gnu.org/licenses/>.
  */
 
+using LightInject;
 using Nethermind.Core;
 using Nethermind.JsonRpc;
 using Nethermind.JsonRpc.Module;
-using Unity;
+using Nethermind.Runner.Controllers;
 
 namespace Nethermind.Runner
 {
     public class Bootstraper
     {
-        public IUnityContainer Container { get; set; }
+        public static ServiceContainer Container { get; set; }
 
         public Bootstraper()
         {
-            Container = new UnityContainer();
+            Container = new ServiceContainer();
             ConfigureContainer();
         }
 
         private void ConfigureContainer()
         {
-            Container.RegisterType<ILogger, ConsoleLogger>();
-            Container.RegisterType<IConfigurationProvider, ConfigurationProvider>();
-            Container.RegisterType<IJsonSerializer, JsonSerializer>();
-            Container.RegisterType<INetModule, NetModule>();
-            Container.RegisterType<IWeb3Module, Web3Module>();
-            Container.RegisterType<IEthModule, EthModule>();
-            Container.RegisterType<IJsonRpcService, JsonRpcService>();
+            Container.Register<ILogger, ConsoleLogger>();
+            Container.Register<IConfigurationProvider, ConfigurationProvider>(new PerContainerLifetime());
+            Container.Register<IJsonSerializer, JsonSerializer>();
+            Container.Register<INetModule, NetModule>();
+            Container.Register<IWeb3Module, Web3Module>();
+            Container.Register<IEthModule, EthModule>();
+            Container.Register<IJsonRpcService, JsonRpcService>();
 
-            Container.RegisterType<IJsonRpcRunner, JsonRpcRunner>();
-            Container.RegisterType<IEthereumRunner, EthereumRunner>();
+            Container.Register<IJsonRpcRunner, JsonRpcRunner>();
+            Container.Register<IEthereumRunner, EthereumRunner>();
+
+            Container.Register<MainController>();
         }
     }
 }

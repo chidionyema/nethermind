@@ -47,6 +47,10 @@ namespace Nethermind.JsonRpc
         {
             try
             {
+                if (string.IsNullOrEmpty(request))
+                {
+                    return GetErrorResponse(ErrorType.InvalidRequest, "Empty request is not allowed");
+                }
                 var rpcRequest = _jsonSerializer.Deserialize<JsonRpcRequest>(request);
                 (ErrorType?, string) validateResult = Validate(rpcRequest);
                 if (validateResult.Item1.HasValue)
@@ -66,7 +70,7 @@ namespace Nethermind.JsonRpc
             catch (Exception ex)
             {
                 _logger.Error($"Error during parsing/validation, request: {request}", ex);
-                return GetErrorResponse(ErrorType.ParseError, "Incorrect message", null, null);
+                return GetErrorResponse(ErrorType.ParseError, "Incorrect message");
             }         
         }
 
@@ -185,7 +189,7 @@ namespace Nethermind.JsonRpc
             return serializedReponse;
         }
 
-        private string GetErrorResponse(ErrorType errorType, string message, string id, string methodName)
+        private string GetErrorResponse(ErrorType errorType, string message, string id = null, string methodName = null)
         {
             _logger.Error($"Error during processing the request, method: {methodName ?? "none"}, id: {id ?? "none"}, errorType: {errorType}, message: {message}");
 

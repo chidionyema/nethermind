@@ -31,7 +31,7 @@ namespace Nethermind.Blockchain
         private readonly ILogger _logger;
 
         public BlockchainProcessor(
-            Rlp genesisBlockRlp,
+            //Rlp genesisBlockRlp,
             IBlockProcessor blockProcessor,
             IBlockStore blockStore,
             ILogger logger)
@@ -40,6 +40,11 @@ namespace Nethermind.Blockchain
             _blockProcessor = blockProcessor;
             _logger = logger;
 
+            //Process(genesisBlockRlp);
+        }
+
+        public void Initialize(Rlp genesisBlockRlp)
+        {
             Process(genesisBlockRlp);
         }
 
