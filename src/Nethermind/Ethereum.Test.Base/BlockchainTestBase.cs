@@ -37,7 +37,7 @@ using Nethermind.Store;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace Ethereum.Blockchain.Test
+namespace Ethereum.Test.Base
 {
     public class BlockchainTestBase
     {
@@ -96,6 +96,11 @@ namespace Ethereum.Blockchain.Test
         {
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
             IEnumerable<string> testDirs = Directory.EnumerateDirectories(".", testSet);
+            if (Directory.Exists(".\\Tests\\"))
+            {
+                testDirs = testDirs.Union(Directory.EnumerateDirectories(".\\Tests\\", testSet));
+            }
+
             Dictionary<string, Dictionary<string, BlockchainTestJson>> testJsons = new Dictionary<string, Dictionary<string, BlockchainTestJson>>();
             foreach (string testDir in testDirs)
             {
@@ -216,12 +221,10 @@ namespace Ethereum.Blockchain.Test
                 ShouldLog.Processing ? _logger : null);
             
             IBlockchainProcessor blockchainProcessor = new BlockchainProcessor(
-                //test.GenesisRlp,
+                test.GenesisRlp,
                 blockProcessor,
                 _chain,
                 ShouldLog.Processing ? _logger : null);
-
-            blockchainProcessor.Initialize(test.GenesisRlp);
 
             var rlps = test.Blocks.Select(tb => new Rlp(Hex.ToBytes(tb.Rlp))).ToArray();
             for (int i = 0; i < rlps.Length; i++)
