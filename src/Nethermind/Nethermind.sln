@@ -79,7 +79,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nethermind.Mining", "Nether
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nethermind.Mining.Test", "Nethermind.Mining.Test\Nethermind.Mining.Test.csproj", "{658F7F8A-0314-4005-93E8-03B4EB367597}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nethermind.Runner.Web", "Nethermind.Runner.Web\Nethermind.Runner.Web.csproj", "{6A3350CA-B60B-4932-8783-8E9A6936DAF3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nethermind.Runner.TestClient", "Nethermind.Runner.TestClient\Nethermind.Runner.TestClient.csproj", "{9AA4E865-97B1-49E1-BC3F-ED368D65EE26}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -239,10 +239,10 @@ Global
 		{658F7F8A-0314-4005-93E8-03B4EB367597}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{658F7F8A-0314-4005-93E8-03B4EB367597}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{658F7F8A-0314-4005-93E8-03B4EB367597}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6A3350CA-B60B-4932-8783-8E9A6936DAF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6A3350CA-B60B-4932-8783-8E9A6936DAF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6A3350CA-B60B-4932-8783-8E9A6936DAF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6A3350CA-B60B-4932-8783-8E9A6936DAF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AA4E865-97B1-49E1-BC3F-ED368D65EE26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AA4E865-97B1-49E1-BC3F-ED368D65EE26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AA4E865-97B1-49E1-BC3F-ED368D65EE26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AA4E865-97B1-49E1-BC3F-ED368D65EE26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

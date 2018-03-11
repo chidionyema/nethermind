@@ -2,6 +2,7 @@
   "profiles": {
     "Nethermind.Runner.Web": {
       "commandName": "Project",
+      "commandLineArgs": "-g f:\\IT\\projects\\Crypto\\deployments\\docker\\Tests\\genesis.json",
       "launchBrowser": true,
       "launchUrl": "api/values",
       "environmentVariables": {
