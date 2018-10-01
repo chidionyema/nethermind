@@ -180,6 +180,7 @@ namespace Nethermind.Network.Rlpx
                 session.RemotePort = remotePort;
             }
 
+            //Sync call - we want to wait until completed
             SessionCreated?.Invoke(this, new SessionEventArgs(session));
 
             HandshakeRole role = connectionDirection == ConnectionDirection.In ? HandshakeRole.Recipient : HandshakeRole.Initiator;

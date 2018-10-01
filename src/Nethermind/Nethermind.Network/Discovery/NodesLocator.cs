@@ -195,7 +195,7 @@ namespace Nethermind.Network.Discovery
 
         private Result SendFindNodeSync(Node destinationNode, byte[] searchedNodeId)
         {
-            var nodeManager = _discoveryManager.GetNodeLifecycleManager(destinationNode);
+            var nodeManager = _discoveryManager.GetOrAddNodeLifecycleManager(destinationNode);
             nodeManager?.SendFindNode(searchedNodeId ?? _masterNode.Id.Bytes);
 
             if (_discoveryManager.WasMessageReceived(destinationNode.IdHashText, MessageType.Neighbors, _configurationProvider.SendNodeTimeout))

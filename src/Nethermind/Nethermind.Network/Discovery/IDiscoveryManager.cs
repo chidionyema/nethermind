@@ -27,7 +27,7 @@ namespace Nethermind.Network.Discovery
     public interface IDiscoveryManager : IDiscoveryMsgListener
     {
         IMessageSender MessageSender { set; }
-        INodeLifecycleManager GetNodeLifecycleManager(Node node, bool isPersisted = false);
+        INodeLifecycleManager GetOrAddNodeLifecycleManager(Node node, bool isPersisted = false);
         void SendMessage(DiscoveryMessage discoveryMessage);
         bool WasMessageReceived(string senderIdHash, MessageType messageType, int timeout);
         event EventHandler<NodeEventArgs> NodeDiscovered;

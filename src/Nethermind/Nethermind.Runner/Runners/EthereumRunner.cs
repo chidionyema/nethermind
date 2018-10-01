@@ -574,11 +574,12 @@ namespace Nethermind.Runner.Runners
             _peerManager.Init(_initConfig.DiscoveryEnabled);
         }
 
-        private async Task StartPeer()
+        private Task StartPeer()
         {
             if (_logger.IsDebug) _logger.Debug("Initializing peer manager");
-            await _peerManager.Start();
+            _peerManager.Start();
             if (_logger.IsDebug) _logger.Debug("Peer manager initialization completed");
+            return Task.CompletedTask;
         }
 
         private void InitDiscovery()

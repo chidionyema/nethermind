@@ -501,7 +501,7 @@ namespace Nethermind.Blockchain
                     return;
                 }
 
-                SyncEvent?.Invoke(this, new SyncEventArgs(peerInfo.Peer, SyncStatus.Started)
+                RaiseSyncEvent(new SyncEventArgs(peerInfo.Peer, SyncStatus.Started)
                 {
                     NodeBestBlockNumber = peerInfo.NumberAvailable,
                     OurBestBlockNumber = _blockTree.BestSuggested.Number
@@ -534,7 +534,7 @@ namespace Nethermind.Blockchain
 
                         RemovePeer(peerInfo.Peer);
                         if (_logger.IsTrace) _logger.Trace($"Sync with Node: {currentPeerNodeId} failed. Removed node from sync peers.");
-                        SyncEvent?.Invoke(this, new SyncEventArgs(peerInfo.Peer, SyncStatus.Failed)
+                        RaiseSyncEvent(new SyncEventArgs(peerInfo.Peer, SyncStatus.Failed)
                         {
                             NodeBestBlockNumber = peerInfo.NumberAvailable,
                             OurBestBlockNumber = _blockTree.BestSuggested.Number
@@ -551,7 +551,7 @@ namespace Nethermind.Blockchain
                         {
                             RemovePeer(peerInfo.Peer);
                             if (_logger.IsTrace) _logger.Trace($"Sync with Node: {currentPeerNodeId} canceled. Removed node from sync peers.");
-                            SyncEvent?.Invoke(this, new SyncEventArgs(peerInfo.Peer, SyncStatus.Cancelled)
+                            RaiseSyncEvent(new SyncEventArgs(peerInfo.Peer, SyncStatus.Cancelled)
                             {
                                 NodeBestBlockNumber = peerInfo.NumberAvailable,
                                 OurBestBlockNumber = _blockTree.BestSuggested.Number
@@ -561,7 +561,7 @@ namespace Nethermind.Blockchain
                     else if (t.IsCompleted)
                     {
                         if (_logger.IsInfo) _logger.Info($"Sync process finished with nodeId: {currentPeerNodeId}. Best block now is {_blockTree.BestSuggested.Hash} ({_blockTree.BestSuggested.Number})");
-                        SyncEvent?.Invoke(this, new SyncEventArgs(peerInfo.Peer, SyncStatus.Completed)
+                        RaiseSyncEvent(new SyncEventArgs(peerInfo.Peer, SyncStatus.Completed)
                         {
                             NodeBestBlockNumber = peerInfo.NumberAvailable,
                             OurBestBlockNumber = _blockTree.BestSuggested.Number
@@ -576,6 +576,21 @@ namespace Nethermind.Blockchain
                     _peerSyncCancellationTokenSource?.Dispose();
                 }, syncCancellationToken);
             }
+        }
+
+        private void RaiseSyncEvent(SyncEventArgs syncEventArgs)
+        {
+            if (SyncEvent == null)
+            {
+                return;;
+            }
+
+            //Fire and forget
+            Task.Run(() => SyncEvent.Invoke(this, syncEventArgs)).ContinueWith(x =>
+            {
+                if (x.IsFaulted && _logger.IsError) _logger.Error($"Errur during SyncEvent raise: {x.Exception}");
+            });
+
         }
 
         private PeerInfo SelectBestPeerForSync()
@@ -790,24 +805,22 @@ namespace Nethermind.Blockchain
                     {
                         if (_logger.IsTrace) _logger.Trace($"InitPeerInfo failed for node: {peer.NodeId}{Environment.NewLine}{t.Exception}");
                         RemovePeer(peer);
-                        SyncEvent?.Invoke(this, new SyncEventArgs(peer, SyncStatus.InitFailed));
+                        RaiseSyncEvent(new SyncEventArgs(peer, SyncStatus.InitFailed));
                     }
                     else if (t.IsCanceled)
                     {
                         RemovePeer(peer);
-                        SyncEvent?.Invoke(this, new SyncEventArgs(peer, SyncStatus.InitCancelled));
+                        RaiseSyncEvent(new SyncEventArgs(peer, SyncStatus.InitCancelled));
                         token.ThrowIfCancellationRequested();
                     }
                     else
                     {
                         if (_logger.IsTrace) _logger.Trace($"Received head block info from {peer.NodeId} with head block numer {getNumberTask.Result}");
-                        SyncEvent?.Invoke(
-                            this,
-                            new SyncEventArgs(peer, SyncStatus.InitCompleted)
-                            {
-                                NodeBestBlockNumber = getNumberTask.Result,
-                                OurBestBlockNumber = _blockTree.BestSuggested.Number
-                            });
+                        RaiseSyncEvent(new SyncEventArgs(peer, SyncStatus.InitCompleted)
+                        {
+                            NodeBestBlockNumber = getNumberTask.Result,
+                            OurBestBlockNumber = _blockTree.BestSuggested.Number
+                        });
 
                         bool result = _peers.TryGetValue(peer.NodeId, out PeerInfo peerInfo);
                         if (!result)

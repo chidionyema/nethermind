@@ -265,19 +265,12 @@ namespace Nethermind.Network.Test
         {
             var node = _nodeFactory.CreateNode("192.1.1.1", 3333);
 
-            var task = _peerManager.RunPeerUpdate();
-            _discoveryManager.GetNodeLifecycleManager(node);
-            task.Wait();
+            _discoveryManager.GetOrAddNodeLifecycleManager(node);
 
             //verify new peer is added
             Assert.AreEqual(1, _peerManager.CandidatePeers.Count);
             Assert.AreEqual(node.Id, _peerManager.CandidatePeers.First().Node.Id);
-
-            //trigger connection start
-            task = _peerManager.RunPeerUpdate();
-            task.Wait();
             Assert.AreEqual(1, _localPeer.ConnectionAsyncCallsCounter);
-            Assert.AreEqual(1, _peerManager.CandidatePeers.Count);
             Assert.AreEqual(1, _peerManager.ActivePeers.Count);
 
             //trigger connection initialized

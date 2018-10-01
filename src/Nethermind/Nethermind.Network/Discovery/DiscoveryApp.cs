@@ -247,7 +247,7 @@ namespace Nethermind.Network.Discovery
                 }
                 
                 var node = _nodeFactory.CreateNode(networkNode.NodeId, networkNode.Host, networkNode.Port);
-                var manager = _discoveryManager.GetNodeLifecycleManager(node, true);
+                var manager = _discoveryManager.GetOrAddNodeLifecycleManager(node, true);
                 if (manager == null)
                 {
                     if (_logger.IsDebug)
@@ -268,16 +268,29 @@ namespace Nethermind.Network.Discovery
         {
             if(_logger.IsDebug) _logger.Debug("Starting discovery timer");
             _discoveryTimer = new Timer(_configurationProvider.DiscoveryInterval) {AutoReset = false};
-            _discoveryTimer.Elapsed += async (sender, e) =>
+            _discoveryTimer.Elapsed += (sender, e) =>
             {
                 _discoveryTimer.Enabled = false;
-                await RunDiscoveryAsync(_appShutdownSource.Token);
-                await RunRefreshAsync(_appShutdownSource.Token);
+                RunDiscoveryCycle();
                 _discoveryTimer.Enabled = true;
             };
             _discoveryTimer.Start();
         }
-        
+
+        private void RunDiscoveryCycle()
+        {
+            //Wait for cycle to complete
+            var task = Task.Run(async () =>
+            {
+                await RunDiscoveryAsync(_appShutdownSource.Token);
+                await RunRefreshAsync(_appShutdownSource.Token);
+            }).ContinueWith(x =>
+            {
+                if (x.IsFaulted && _logger.IsError) _logger.Error($"Error during discovery cycle: {x.Exception}");
+            });
+            task.Wait();
+        }
+
         private void StopDiscoveryTimer()
         {
             try
@@ -295,16 +308,10 @@ namespace Nethermind.Network.Discovery
         {
             if(_logger.IsDebug) _logger.Debug("Starting discovery persistance timer");
             _discoveryPersistanceTimer = new Timer(_configurationProvider.DiscoveryPersistanceInterval) {AutoReset = false};
-            _discoveryPersistanceTimer.Elapsed += async (sender, e) =>
+            _discoveryPersistanceTimer.Elapsed += (sender, e) =>
             {
                 _discoveryPersistanceTimer.Enabled = false;
-                await RunDiscoveryCommit().ContinueWith(x =>
-                {
-                    if (x.IsFaulted)
-                    {
-                        if (_logger.IsError) _logger.Error("Error during RunDiscoveryCommit", x.Exception);
-                    }
-                });
+                RunDiscoveryCommit();
                 _discoveryPersistanceTimer.Enabled = true;
             };
             _discoveryPersistanceTimer.Start();
@@ -363,7 +370,7 @@ namespace Nethermind.Network.Discovery
                 var node = bootnode.NodeId == null
                     ? _nodeFactory.CreateNode(bootnode.Host, bootnode.Port)
                     : _nodeFactory.CreateNode(new NodeId(new PublicKey(Bytes.FromHexString(bootnode.NodeId))), bootnode.Host, bootnode.Port, true);
-                var manager = _discoveryManager.GetNodeLifecycleManager(node);
+                var manager = _discoveryManager.GetOrAddNodeLifecycleManager(node);
                 if (manager != null)
                 {
                     managers.Add(manager);
@@ -441,7 +448,7 @@ namespace Nethermind.Network.Discovery
             await _nodesLocator.LocateNodesAsync(randomId, cancellationToken);
         }
 
-        private async Task RunDiscoveryCommit()
+        private void RunDiscoveryCommit()
         {
             var managers = _discoveryManager.GetNodeLifecycleManagers();
             //we need to update all notes to update reputation
@@ -453,14 +460,8 @@ namespace Nethermind.Network.Discovery
                 return;
             }
 
-            _storageCommitTask = Task.Run(() =>
-            {
-                _discoveryStorage.Commit();
-                _discoveryStorage.StartBatch();
-            });
-            
-            await _storageCommitTask;
-            _storageCommitTask = null;
+            _discoveryStorage.Commit();
+            _discoveryStorage.StartBatch();
         }
     }
 }

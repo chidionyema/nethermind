@@ -86,7 +86,7 @@ namespace Nethermind.Network.Test.Discovery
         public void ActiveStateTest()
         {
             var node = _nodeFactory.CreateNode(_host, _port);
-            var manager = _discoveryManager.GetNodeLifecycleManager(node);
+            var manager = _discoveryManager.GetOrAddNodeLifecycleManager(node);
             Assert.AreEqual(NodeLifecycleState.New, manager.State);
 
             manager.ProcessPongMessage(new PongMessage {FarAddress = new IPEndPoint(IPAddress.Parse(_host), _port), FarPublicKey = _nodeIds[0].PublicKey });
@@ -98,7 +98,7 @@ namespace Nethermind.Network.Test.Discovery
         public void UnreachableStateTest()
         {
             var node = _nodeFactory.CreateNode(_host, _port);
-            var manager = _discoveryManager.GetNodeLifecycleManager(node);
+            var manager = _discoveryManager.GetOrAddNodeLifecycleManager(node);
             Assert.AreEqual(NodeLifecycleState.New, manager.State);
 
             //Thread.Sleep(500);
@@ -116,7 +116,7 @@ namespace Nethermind.Network.Test.Discovery
             {
                 var host = "192.168.1." + i;
                 var node = _nodeFactory.CreateNode(_nodeIds[i], host, _port);
-                var manager = _discoveryManager.GetNodeLifecycleManager(node);
+                var manager = _discoveryManager.GetOrAddNodeLifecycleManager(node);
                 managers.Add(manager);
                 Assert.AreEqual(NodeLifecycleState.New, manager.State);
 
@@ -132,7 +132,7 @@ namespace Nethermind.Network.Test.Discovery
 
             //adding 4th node - table can store only 3, eviction process should start
             var candidateNode = _nodeFactory.CreateNode(_nodeIds[3], _host, _port);
-            var candidateManager = _discoveryManager.GetNodeLifecycleManager(candidateNode);
+            var candidateManager = _discoveryManager.GetOrAddNodeLifecycleManager(candidateNode);
 
             Assert.AreEqual(NodeLifecycleState.New, candidateManager.State);
 
@@ -172,7 +172,7 @@ namespace Nethermind.Network.Test.Discovery
             {
                 var host = "192.168.1." + i;
                 var node = _nodeFactory.CreateNode(_nodeIds[i], host, _port);
-                var manager = _discoveryManager.GetNodeLifecycleManager(node);
+                var manager = _discoveryManager.GetOrAddNodeLifecycleManager(node);
                 managers.Add(manager);
                 Assert.AreEqual(NodeLifecycleState.New, manager.State);
 
@@ -191,7 +191,7 @@ namespace Nethermind.Network.Test.Discovery
             //adding 4th node - table can store only 3, eviction process should start
             var candidateNode = _nodeFactory.CreateNode(_nodeIds[3], _host, _port);
 
-            var candidateManager = _discoveryManager.GetNodeLifecycleManager(candidateNode);
+            var candidateManager = _discoveryManager.GetOrAddNodeLifecycleManager(candidateNode);
             Assert.AreEqual(NodeLifecycleState.New, candidateManager.State);
             _discoveryManager.OnIncomingMessage(new PongMessage
             {

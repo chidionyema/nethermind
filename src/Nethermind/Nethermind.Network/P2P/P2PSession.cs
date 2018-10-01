@@ -153,7 +153,7 @@ namespace Nethermind.Network.P2P
 
         public void Handshake()
         {
-            HandshakeComplete?.Invoke(this, EventArgs.Empty);
+            RaiseHandshakeCompleteEvent(EventArgs.Empty);
         }
 
         public async Task InitiateDisconnectAsync(DisconnectReason disconnectReason)
@@ -188,11 +188,7 @@ namespace Nethermind.Network.P2P
             }
 
             _wasDisconnected = true;
-            if (PeerDisconnected != null)
-            {
-                PeerDisconnected.Invoke(this, new DisconnectEventArgs(disconnectReason, disconnectType));
-            }
-            else if (_logger.IsWarn) _logger.Warn("No subscriptions for PeerDisconnected");
+            RaisePeerDisconnectedEvent(new DisconnectEventArgs(disconnectReason, disconnectType));
 
             //Possible in case of disconnect before p2p initialization
             if (_context == null)
@@ -247,7 +243,7 @@ namespace Nethermind.Network.P2P
                             if (_logger.IsTrace) _logger.Trace($"{RemoteNodeId} {protocolHandler.ProtocolCode} v{protocolHandler.ProtocolVersion} established - Disabling Snappy");
                         }
 
-                        ProtocolInitialized?.Invoke(this, args);
+                        RaiseProtocolInitializedEvent(args);
                     };
                     break;
                 case Protocol.Eth:
@@ -262,7 +258,7 @@ namespace Nethermind.Network.P2P
                     protocolHandler.ProtocolInitialized += (sender, args) =>
                     {
                         //await _syncManager.AddPeer((Eth62ProtocolHandler)protocolHandler);
-                        ProtocolInitialized?.Invoke(this, args);
+                        RaiseProtocolInitializedEvent(args);
                     };
                     break;
                 default:
@@ -316,6 +312,57 @@ namespace Nethermind.Network.P2P
             };
 
             protocolHandler.Init();
+        }
+
+        private void RaisePeerDisconnectedEvent(DisconnectEventArgs eventArgs)
+        {
+            if (PeerDisconnected == null)
+            {
+                if (_logger.IsWarn) _logger.Warn("No subscriptions for PeerDisconnected");
+                return;
+            }
+
+            //fire and forget
+            Task.Run(() => PeerDisconnected.Invoke(this, eventArgs)).ContinueWith(x =>
+            {
+                if (x.IsFaulted && _logger.IsError) _logger.Error($"Error during PeerDisconnectedEvent raise: {x.Exception}");
+            });
+        }
+
+        private void RaiseProtocolInitializedEvent(ProtocolInitializedEventArgs eventArgs)
+        {
+            if (ProtocolInitialized == null)
+            {
+                if (_logger.IsWarn) _logger.Warn("No subscriptions for ProtocolInitialized");
+                return;
+            }
+
+            //wait for completion
+            ProtocolInitialized.Invoke(this, eventArgs);
+
+            ////fire and forget
+            //Task.Run(() => ProtocolInitialized.Invoke(this, eventArgs)).ContinueWith(x =>
+            //{
+            //    if (x.IsFaulted && _logger.IsError) _logger.Error($"Error during ProtocolInitializedEvent raise: {x.Exception}");
+            //});
+        }
+
+        private void RaiseHandshakeCompleteEvent(EventArgs eventArgs)
+        {
+            if (HandshakeComplete == null)
+            {
+                if (_logger.IsWarn) _logger.Warn("No subscriptions for HandshakeComplete");
+                return;
+            }
+
+            //wait for completion
+            HandshakeComplete.Invoke(this, eventArgs);
+
+            ////fire and forget
+            //Task.Run(() => HandshakeComplete.Invoke(this, eventArgs)).ContinueWith(x =>
+            //{
+            //    if (x.IsFaulted && _logger.IsError) _logger.Error($"Error during HandshakeCompleteEvent raise: {x.Exception}");
+            //});
         }
     }
 }

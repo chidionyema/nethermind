@@ -96,7 +96,7 @@ namespace Nethermind.Network.Discovery.Lifecycle
                         continue;
                     }
                     //If node is new it will create a new nodeLifecycleManager and will update state to New, which will trigger Ping
-                    _discoveryManager.GetNodeLifecycleManager(node);
+                    _discoveryManager.GetOrAddNodeLifecycleManager(node);
                 }
             }
 
@@ -173,7 +173,7 @@ namespace Nethermind.Network.Discovery.Lifecycle
                     var result = _nodeTable.AddNode(ManagedNode);
                     if (result.ResultType == NodeAddResultType.Full)
                     {
-                        var evictionCandidate = _discoveryManager.GetNodeLifecycleManager(result.EvictionCandidate.Node);
+                        var evictionCandidate = _discoveryManager.GetOrAddNodeLifecycleManager(result.EvictionCandidate.Node);
                         if (evictionCandidate != null)
                         {
                             _evictionManager.StartEvictionProcess(evictionCandidate, this);

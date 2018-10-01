@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Nethermind.Config;
 using Nethermind.Core;
 using Nethermind.Core.Extensions;
@@ -79,7 +80,7 @@ namespace Nethermind.Network.Discovery
                 MessageType msgType = message.MessageType;
 
                 Node node = _nodeFactory.CreateNode(new NodeId(message.FarPublicKey), message.FarAddress);
-                INodeLifecycleManager nodeManager = GetNodeLifecycleManager(node);
+                INodeLifecycleManager nodeManager = GetOrAddNodeLifecycleManager(node);
                 if (nodeManager == null)
                 {
                     return;
@@ -115,7 +116,7 @@ namespace Nethermind.Network.Discovery
             }
         }
 
-        public INodeLifecycleManager GetNodeLifecycleManager(Node node, bool isPersisted = false)
+        public INodeLifecycleManager GetOrAddNodeLifecycleManager(Node node, bool isPersisted = false)
         {
             if (_nodeTable.MasterNode.Equals(node))
             {
@@ -212,7 +213,14 @@ namespace Nethermind.Network.Discovery
 
         private void OnNewNode(INodeLifecycleManager manager)
         {
-            NodeDiscovered?.Invoke(this, new NodeEventArgs(manager));
+            //Fire and forget
+            Task.Run(() =>{ NodeDiscovered?.Invoke(this, new NodeEventArgs(manager));}).ContinueWith(x =>
+            {
+                if (x.IsFaulted)
+                {
+                    if (_logger.IsError) _logger.Error($"Error on NodeDiscovered event raise: {x.Exception}");
+                }
+            }); 
         }
 
         private void NotifySubscribersOnMsgReceived(MessageType msgType, Node node)

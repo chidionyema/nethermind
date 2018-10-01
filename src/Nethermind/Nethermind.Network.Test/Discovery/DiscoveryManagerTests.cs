@@ -107,7 +107,7 @@ namespace Nethermind.Network.Test.Discovery
             var node = nodes.First();
             Assert.AreEqual(_host, node.Host);
             Assert.AreEqual(_port, node.Port);
-            var manager = _discoveryManager.GetNodeLifecycleManager(node);
+            var manager = _discoveryManager.GetOrAddNodeLifecycleManager(node);
             Assert.AreEqual(NodeLifecycleState.Active, manager.State);
         }
 
@@ -123,7 +123,7 @@ namespace Nethermind.Network.Test.Discovery
             var node = nodes.First();
             Assert.AreEqual(_host, node.Host);
             Assert.AreEqual(_port, node.Port);
-            var manager = _discoveryManager.GetNodeLifecycleManager(node);
+            var manager = _discoveryManager.GetOrAddNodeLifecycleManager(node);
             Assert.AreEqual(NodeLifecycleState.Active, manager.State);
 
             //receiving findNode
@@ -145,7 +145,7 @@ namespace Nethermind.Network.Test.Discovery
             var node = nodes.First();
             Assert.AreEqual(_host, node.Host);
             Assert.AreEqual(_port, node.Port);
-            var manager = _discoveryManager.GetNodeLifecycleManager(node);
+            var manager = _discoveryManager.GetOrAddNodeLifecycleManager(node);
             Assert.AreEqual(NodeLifecycleState.Active, manager.State);
 
             //sending FindNode to expect Neighbors
