@@ -283,11 +283,7 @@ namespace Ethereum.Test.Base
             IBlockchainProcessor blockchainProcessor = new BlockchainProcessor(
                 blockTree,
                 blockProcessor,
-<<<<<<< HEAD
-                new TxSignaturesRecoveryStep(ethereumEcdsa, NullTransactionPool.Instance),
-=======
                 new TxSignaturesRecoveryStep(ecdsa, NullTransactionPool.Instance),
->>>>>>> dfb484b71318cb95f974cc561e2b87592513cadc
                 _logManager,
                 false,
                 false);
