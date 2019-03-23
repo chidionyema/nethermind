@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2018 Demerzel Solutions Limited
  * This file is part of the Nethermind library.
  *
@@ -240,9 +240,11 @@ namespace Ethereum.Test.Base
             DifficultyCalculator.Wrapped = new DifficultyCalculator(specProvider);
             IRewardCalculator rewardCalculator = new RewardCalculator(specProvider);
 
-            IEthereumEcdsa ethereumEcdsa = new EthereumEcdsa(specProvider, _logManager);
+
+            IEthereumEcdsa ecdsa = new EthereumEcdsa(specProvider, _logManager);
             ITransactionPool transactionPool = new TransactionPool(NullTransactionStorage.Instance,
-                new PendingTransactionThresholdValidator(), new Timestamp(), ethereumEcdsa, specProvider, _logManager);
+                new PendingTransactionThresholdValidator(), new Timestamp(), ecdsa, specProvider, _logManager);
+
             IReceiptStorage receiptStorage = NullReceiptStorage.Instance;
             IBlockTree blockTree = new BlockTree(new MemDb(), new MemDb(), specProvider, transactionPool, _logManager);
             IBlockhashProvider blockhashProvider = new BlockhashProvider(blockTree);
@@ -281,7 +283,11 @@ namespace Ethereum.Test.Base
             IBlockchainProcessor blockchainProcessor = new BlockchainProcessor(
                 blockTree,
                 blockProcessor,
+<<<<<<< HEAD
                 new TxSignaturesRecoveryStep(ethereumEcdsa, NullTransactionPool.Instance),
+=======
+                new TxSignaturesRecoveryStep(ecdsa, NullTransactionPool.Instance),
+>>>>>>> dfb484b71318cb95f974cc561e2b87592513cadc
                 _logManager,
                 false,
                 false);

@@ -23,10 +23,10 @@ using Nethermind.Secp256k1;
 namespace Nethermind.Core.Crypto
 {
     /// <summary>
-    ///     for signer tests
+    ///     for ecdsa tests
     ///     http://blog.enuma.io/update/2016/11/01/a-tale-of-two-curves-hardware-signing-for-ethereum.html
     /// </summary>
-    public class Signer : ISigner
+    public class Ecdsa : IEcdsa
     {
         public Signature Sign(PrivateKey privateKey, Keccak message)
         {
@@ -57,7 +57,7 @@ namespace Nethermind.Core.Crypto
             PublicKey address = RecoverPublicKey(signature, message);
             if (!address.Equals(privateKey.PublicKey))
             {
-                throw new InvalidOperationException("After signing recovery returns different address than signer's");
+                throw new InvalidOperationException("After signing recovery returns different address than ecdsa's");
             }
 #endif
 
